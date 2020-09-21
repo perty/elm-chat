@@ -1,2 +1,2 @@
 rootProject.name = 'elm-chat'
-include 'client', 'slack'
+include 'frontend', 'backend'

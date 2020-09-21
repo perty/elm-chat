@@ -1,5 +1,6 @@
 elm-stuff
-client/elm.js
+elm.js
 *.iml
 .idea
-
+.gradle
+build
