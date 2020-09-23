@@ -1,24 +1,8 @@
-module Data exposing (Message, sampleActiveChannel, sampleChannels, sampleMessages)
+module Data exposing (Message, sampleActiveChannel, sampleMessages)
 
 
 type alias Message =
     { author : String, time : String, text : String }
-
-
-sampleChannels : List String
-sampleChannels =
-    [ "beginners"
-    , "core-coordination"
-    , "ellie"
-    , "elm-community"
-    , "elm-discuss"
-    , "elm-format"
-    , "elm-markdown"
-    , "elm-ui"
-    , "general"
-    , "jobs"
-    , "news-and-links"
-    ]
 
 
 sampleActiveChannel : String
