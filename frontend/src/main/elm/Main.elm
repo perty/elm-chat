@@ -1,13 +1,16 @@
 module Main exposing (main)
 
 import Browser
-import Data exposing (Message, sampleActiveChannel, sampleChannels, sampleMessages)
+import Data exposing (Message, sampleActiveChannel, sampleMessages)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
+import Json.Decode
+import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData.Http
 import Time
 
 
@@ -23,24 +26,35 @@ main =
 type Msg
     = Tick Time.Posix
     | SelectChannel String
+    | HandleChannelResponse (WebData (List String))
 
 
 type alias Model =
-    { channels : List String
+    { channels : WebData (List String)
     , activeChannel : String
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( initialModel, Cmd.none )
+    ( initialModel, loadChannels )
 
 
 initialModel : Model
 initialModel =
-    { channels = sampleChannels
+    { channels = NotAsked
     , activeChannel = sampleActiveChannel
     }
+
+
+loadChannels : Cmd Msg
+loadChannels =
+    RemoteData.Http.get "http://localhost:8080/api/v1/channels" HandleChannelResponse channelDecoder
+
+
+channelDecoder : Json.Decode.Decoder (List String)
+channelDecoder =
+    Json.Decode.list Json.Decode.string
 
 
 grey : Color
@@ -53,8 +67,8 @@ white =
     rgb255 0xFF 0xFF 0xFF
 
 
-channelPanel : List String -> String -> Element Msg
-channelPanel channels activeChannel =
+channelPanel : WebData (List String) -> String -> Element Msg
+channelPanel channelData activeChannel =
     let
         activeChannelAttrs =
             [ Background.color <| rgba255 0 0 0 0.4, Font.bold ]
@@ -77,16 +91,27 @@ channelPanel channels activeChannel =
                         text ("# " ++ channel)
                 }
     in
-    column
-        [ height fill
-        , width <| fillPortion 1
-        , paddingXY 0 10
-        , scrollbarY
-        , Background.color <| rgb255 0xD0 0xD0 0xD0
-        , Font.color white
-        ]
-    <|
-        List.map channelEl channels
+    case channelData of
+        NotAsked ->
+            column [] [ el [] <| text "Not asked for it yet." ]
+
+        Success channels ->
+            column
+                [ height fill
+                , width <| fillPortion 1
+                , paddingXY 0 10
+                , scrollbarY
+                , Background.color <| rgb255 0xD0 0xD0 0xD0
+                , Font.color white
+                ]
+            <|
+                List.map channelEl channels
+
+        Loading ->
+            column [] [ el [] <| text "Loading channels." ]
+
+        Failure _ ->
+            column [] [ el [] <| text "Failed in loading channels." ]
 
 
 chatPanel : String -> List Message -> Element msg
@@ -165,6 +190,9 @@ update msg model =
 
         SelectChannel channel ->
             ( { model | activeChannel = channel }, Cmd.none )
+
+        HandleChannelResponse channelList ->
+            ( { model | channels = channelList }, Cmd.none )
 
 
 
