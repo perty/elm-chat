@@ -1,11 +1,10 @@
 module Main exposing (main)
 
 import Browser
-import Data exposing (Message, sampleActiveChannel)
 import Json.Decode
-import Model exposing (Model)
+import Json.Decode.Pipeline exposing (required)
+import Model exposing (Message, Model, initialModel)
 import Msg exposing (Msg(..))
-import RemoteData exposing (RemoteData(..), WebData)
 import RemoteData.Http
 import Time
 import View exposing (view)
@@ -25,13 +24,6 @@ init _ =
     ( initialModel, loadChannels )
 
 
-initialModel : Model
-initialModel =
-    { channels = NotAsked
-    , activeChannel = sampleActiveChannel
-    }
-
-
 loadChannels : Cmd Msg
 loadChannels =
     RemoteData.Http.get "http://localhost:8080/api/v1/channels" HandleChannelResponse channelDecoder
@@ -40,6 +32,33 @@ loadChannels =
 channelDecoder : Json.Decode.Decoder (List String)
 channelDecoder =
     Json.Decode.list Json.Decode.string
+
+
+loadChannelMessages : String -> Cmd Msg
+loadChannelMessages channel =
+    RemoteData.Http.get "http://localhost:8080/api/v1/channels" HandleChannelMessagesResponse channelMessagesDecoder
+
+
+channelMessagesDecoder : Json.Decode.Decoder (List Message)
+channelMessagesDecoder =
+    Json.Decode.list channelMessageDecoder
+
+
+channelMessageDecoder : Json.Decode.Decoder Message
+channelMessageDecoder =
+    Json.Decode.succeed Message
+        |> required "author" Json.Decode.string
+        |> required "content" Json.Decode.string
+        |> required "created" decodeTime
+
+
+decodeTime : Json.Decode.Decoder Time.Posix
+decodeTime =
+    Json.Decode.int
+        |> Json.Decode.andThen
+            (\ms ->
+                Json.Decode.succeed <| Time.millisToPosix ms
+            )
 
 
 
@@ -57,6 +76,9 @@ update msg model =
 
         HandleChannelResponse channelList ->
             ( { model | channels = channelList }, Cmd.none )
+
+        HandleChannelMessagesResponse channelMessages ->
+            ( { model | channelMessages = channelMessages }, Cmd.none )
 
 
 

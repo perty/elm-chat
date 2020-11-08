@@ -1,15 +1,15 @@
 module View exposing (channelPanel, chatPanel, grey, view, white)
 
-import Data exposing (Message, sampleMessages)
 import Element exposing (Color, Element, alignBottom, alignRight, column, el, fill, fillPortion, height, layout, minimum, mouseOver, none, padding, paddingXY, paragraph, px, rgb255, rgba255, row, scrollbarY, spacingXY, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
-import Model exposing (Model)
+import Model exposing (Message, Model)
 import Msg exposing (Msg(..))
 import RemoteData exposing (RemoteData(..), WebData)
+import TimeUtil
 
 
 view : Model -> Html Msg
@@ -17,7 +17,7 @@ view model =
     layout [ height fill ] <|
         row [ width <| minimum 600 fill, height fill, Font.size 16 ]
             [ channelPanel model.channels model.activeChannel
-            , chatPanel model.activeChannel sampleMessages
+            , chatPanel model.activeChannel model.channelMessages
             ]
 
 
@@ -78,9 +78,10 @@ channelPanel channelData activeChannel =
             column [] [ el [] <| text "Failed in loading channels." ]
 
 
-chatPanel : String -> List Message -> Element msg
+chatPanel : String -> WebData (List Message) -> Element Msg
 chatPanel channel messages =
     let
+        header : Element msg
         header =
             row
                 [ width fill
@@ -101,18 +102,6 @@ chatPanel channel messages =
                     , label = text "Search"
                     }
                 ]
-
-        messageEntry message =
-            column
-                [ width fill, spacingXY 0 5 ]
-                [ row [ spacingXY 10 0 ]
-                    [ el [ Font.bold ] <| text message.author, text message.time ]
-                , paragraph [] [ text message.text ]
-                ]
-
-        messagePanel =
-            column [ padding 10, spacingXY 0 20, height fill, scrollbarY ] <|
-                List.map messageEntry messages
 
         footer =
             el [ alignBottom, padding 20, width fill ] <|
@@ -137,6 +126,33 @@ chatPanel channel messages =
     in
     column [ height fill, width <| fillPortion 3 ]
         [ header
-        , messagePanel
+        , messagePanel messages
         , footer
+        ]
+
+
+messagePanel : WebData (List Message) -> Element Msg
+messagePanel webMessages =
+    case webMessages of
+        NotAsked ->
+            el [] <| text "Not asked"
+
+        Loading ->
+            el [] <| text "Loading"
+
+        Failure _ ->
+            el [] <| text "Failed"
+
+        Success messages ->
+            column [ padding 10, spacingXY 0 20, height fill, scrollbarY ] <|
+                List.map messageEntry messages
+
+
+messageEntry : Message -> Element msg
+messageEntry message =
+    column
+        [ width fill, spacingXY 0 5 ]
+        [ row [ spacingXY 10 0 ]
+            [ el [ Font.bold ] <| text message.author, text (TimeUtil.timeToString TimeUtil.defaultZone message.created) ]
+        , paragraph [] [ text message.content ]
         ]
