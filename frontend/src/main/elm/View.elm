@@ -144,7 +144,14 @@ messagePanel webMessages =
             el [] <| text "Failed"
 
         Success messages ->
-            column [ padding 10, spacingXY 0 20, height fill, scrollbarY ] <|
+            column
+                [ width fill
+                , height <| minimum 0 fill
+                , padding 10
+                , spacingXY 0 20
+                , scrollbarY
+                ]
+            <|
                 List.map messageEntry messages
 
 
