@@ -4,10 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ChannelService {
@@ -23,11 +20,26 @@ public class ChannelService {
 
     List<Message> listChannelMessages(String channel) {
         LOG.info("List messages for channel {}", channel);
+        if (channel.equals("news-and-links")) {
+            return lotsOfMessages();
+        }
         Message message = new Message();
         message.setAuthor("Anna Bot");
         message.setContent("This is the only message of the '" + channel + "' channel.");
         message.setCreated(new Date().getTime());
         return Collections.singletonList(message);
+    }
+
+    private List<Message> lotsOfMessages() {
+        List<Message> messages = new ArrayList<>();
+        for (int n = 0; n < 200; n++) {
+            Message message = new Message();
+            message.setAuthor("Anna Bot");
+            message.setContent("This a news message. It can be very boring. It may make you sleep. You can read more here.");
+            message.setCreated(new Date().getTime());
+            messages.add(message);
+        }
+        return messages;
     }
 }
 
