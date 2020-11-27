@@ -36,7 +36,11 @@ channelDecoder =
 
 loadChannelMessages : String -> Cmd Msg
 loadChannelMessages channel =
-    RemoteData.Http.get "http://localhost:8080/api/v1/channels" HandleChannelMessagesResponse channelMessagesDecoder
+    let
+        url =
+            "http://localhost:8080/api/v1/channels/" ++ channel ++ "/messages"
+    in
+    RemoteData.Http.get url HandleChannelMessagesResponse channelMessagesDecoder
 
 
 channelMessagesDecoder : Json.Decode.Decoder (List Message)
@@ -67,15 +71,15 @@ decodeTime =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
+    case Debug.log "Msg" msg of
         Tick _ ->
             ( model, Cmd.none )
 
         SelectChannel channel ->
-            ( { model | activeChannel = channel }, Cmd.none )
+            ( { model | activeChannel = channel }, loadChannelMessages channel )
 
         HandleChannelResponse channelList ->
-            ( { model | channels = channelList }, Cmd.none )
+            ( { model | channels = channelList }, loadChannelMessages model.activeChannel )
 
         HandleChannelMessagesResponse channelMessages ->
             ( { model | channelMessages = channelMessages }, Cmd.none )

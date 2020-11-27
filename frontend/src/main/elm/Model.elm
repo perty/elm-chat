@@ -1,6 +1,5 @@
 module Model exposing (Message, Model, initialModel)
 
-import Data exposing (sampleActiveChannel)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time
 
@@ -22,6 +21,6 @@ type alias Message =
 initialModel : Model
 initialModel =
     { channels = NotAsked
-    , activeChannel = sampleActiveChannel
+    , activeChannel = "general"
     , channelMessages = NotAsked
     }

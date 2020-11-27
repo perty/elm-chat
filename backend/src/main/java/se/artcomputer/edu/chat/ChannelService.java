@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -20,8 +21,13 @@ public class ChannelService {
         );
     }
 
-    List<Message> listChannelMessages() {
-        return Collections.emptyList();
+    List<Message> listChannelMessages(String channel) {
+        LOG.info("List messages for channel {}", channel);
+        Message message = new Message();
+        message.setAuthor("Anna Bot");
+        message.setContent("This is the only message of the '" + channel + "' channel.");
+        message.setCreated(new Date().getTime());
+        return Collections.singletonList(message);
     }
 }
 

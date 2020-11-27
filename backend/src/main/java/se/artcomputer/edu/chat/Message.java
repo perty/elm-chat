@@ -1,11 +1,9 @@
 package se.artcomputer.edu.chat;
 
-import java.util.Date;
-
 public class Message {
     String author;
     String content;
-    Date  created;
+    long created;
 
     public String getAuthor() {
         return author;
@@ -23,11 +21,11 @@ public class Message {
         this.content = content;
     }
 
-    public Date getCreated() {
+    public long getCreated() {
         return created;
     }
 
-    public void setCreated(Date created) {
+    public void setCreated(long created) {
         this.created = created;
     }
 }
