@@ -11,11 +11,15 @@ public class ChannelService {
     private static final Logger LOG = LoggerFactory.getLogger(ChannelService.class);
 
     List<String> listChannels() {
-        return Arrays.asList(
-                "general",
-                "jobs",
-                "news-and-links"
-        );
+        List<String> result = new ArrayList<>();
+        for (int n = 0; n < 10; n++) {
+            result.addAll(Arrays.asList(
+                    "general",
+                    "jobs",
+                    "news-and-links"
+            ));
+        }
+        return result;
     }
 
     List<Message> listChannelMessages(String channel) {
