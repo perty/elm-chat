@@ -15,10 +15,20 @@ import TimeUtil
 view : Model -> Html Msg
 view model =
     layout [ height fill ] <|
-        row [ width <| minimum 600 fill, height fill, Font.size 16 ]
-            [ channelPanel model.channels model.activeChannel
-            , chatPanel model.activeChannel model.channelMessages
-            ]
+        if model.searching then
+            column [ width fill, height <| minimum 0 <| fill ]
+                [ row [ width fill, Border.width 1, paddingXY 0 5 ] [ el [] <| text "Top menu row" ]
+                , row [ width <| minimum 600 fill, height <| minimum 0 <| fill, Font.size 16 ]
+                    [ channelPanel model.channels model.activeChannel
+                    , chatPanel model.activeChannel model.channelMessages
+                    ]
+                ]
+
+        else
+            row [ width <| minimum 600 fill, height fill, Font.size 16 ]
+                [ channelPanel model.channels model.activeChannel
+                , chatPanel model.activeChannel model.channelMessages
+                ]
 
 
 grey : Color
@@ -81,7 +91,6 @@ channelPanel channelData activeChannel =
 chatPanel : String -> WebData (List Message) -> Element Msg
 chatPanel channel messages =
     let
-        header : Element msg
         header =
             row
                 [ width fill
@@ -98,7 +107,7 @@ chatPanel channel messages =
                     , Border.rounded 6
                     , Border.color grey
                     ]
-                    { onPress = Nothing
+                    { onPress = Just ToggleSearching
                     , label = text "Search"
                     }
                 ]

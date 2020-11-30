@@ -84,6 +84,9 @@ update msg model =
         HandleChannelMessagesResponse channelMessages ->
             ( { model | channelMessages = channelMessages }, Cmd.none )
 
+        ToggleSearching ->
+            ( { model | searching = not model.searching }, Cmd.none )
+
 
 
 -- Subscription

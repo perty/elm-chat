@@ -8,6 +8,7 @@ type alias Model =
     { channels : WebData (List String)
     , activeChannel : String
     , channelMessages : WebData (List Message)
+    , searching : Bool
     }
 
 
@@ -23,4 +24,5 @@ initialModel =
     { channels = NotAsked
     , activeChannel = "general"
     , channelMessages = NotAsked
+    , searching = False
     }

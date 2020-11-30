@@ -10,3 +10,4 @@ type Msg
     | SelectChannel String
     | HandleChannelResponse (WebData (List String))
     | HandleChannelMessagesResponse (WebData (List Message))
+    | ToggleSearching
