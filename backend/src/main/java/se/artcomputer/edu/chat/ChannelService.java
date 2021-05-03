@@ -12,7 +12,7 @@ public class ChannelService {
 
     List<String> listChannels() {
         List<String> result = new ArrayList<>();
-        for (int n = 0; n < 10; n++) {
+        for (var n = 0; n < 10; n++) {
             result.addAll(Arrays.asList(
                     "general",
                     "jobs",
@@ -27,7 +27,7 @@ public class ChannelService {
         if (channel.equals("news-and-links")) {
             return lotsOfMessages();
         }
-        Message message = new Message();
+        var message = new Message();
         message.setAuthor("Anna Bot");
         message.setContent("This is the only message of the '" + channel + "' channel.");
         message.setCreated(new Date().getTime());
@@ -36,8 +36,8 @@ public class ChannelService {
 
     private List<Message> lotsOfMessages() {
         List<Message> messages = new ArrayList<>();
-        for (int n = 0; n < 200; n++) {
-            Message message = new Message();
+        for (var n = 0; n < 200; n++) {
+            var message = new Message();
             message.setAuthor("Anna Bot");
             message.setContent("This a news message. It can be very boring. It may make you sleep. You can read more here.");
             message.setCreated(new Date().getTime());
