@@ -1,0 +1,20 @@
+= WebSockets
+
+== Security
+
+You are npt allowed to subscribe to a topic that you have not been invited to or created.
+
+Chat is not different than group conversations, it is just a group of two persons.
+
+== Design
+
+Using Stomp as I assume it will give some help. Spring has support for it. Offers a protocol fit for the purpose plus fallback alternatives.
+
+Client connects and subscribes to the channels it has access to. Each channel is a topic.
+
+When a client posts a message to a channel, that message is published to that topic.
+
+Client receives the message and displays it. Each message has a unique id so that the client can know if it has seen it already.
+
+
+
