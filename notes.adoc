@@ -10,11 +10,21 @@ Chat is not different than group conversations, it is just a group of two person
 
 Using Stomp as I assume it will give some help. Spring has support for it. Offers a protocol fit for the purpose plus fallback alternatives.
 
+But perhaps SockJS is enough for the fallback. STOMP seems not to be maintained. However, "_Why do we need STOMP? Well, WebSocket is just a communication protocol. It doesn’t define things like - How to send a message only to users who are subscribed to a particular topic, or how to send a message to a particular user. We need STOMP for these functionalities._"
+
+Found version 6 of STOMP here and it is maintained: `https://github.com/stomp-js/stompjs`
+
+Plot thickens: "_For Spring STOMP users: There are few tutorials/guides that implicitly suggest that you need SockJS to use STOMP. That is incorrect, you only need SockJS if you need to support old browsers._"
+
+Found elm-stomp, written by friends https://github.com/insurello/elm-stomp but not maintained.
+
 Client connects and subscribes to the channels it has access to. Each channel is a topic.
 
 When a client posts a message to a channel, that message is published to that topic.
 
 Client receives the message and displays it. Each message has a unique id so that the client can know if it has seen it already.
 
+== Tip
 
+On the server side enable `TRACE` logging for `org.springframework.web.socket`.
 
