@@ -1,9 +1,12 @@
-module Api exposing (channelDecoder, channelMessageDecoder, channelMessagesDecoder, decodeTime, loadChannelMessages, loadChannels)
+module Api exposing (channelDecoder, channelMessageDecoder, channelMessagesDecoder, decodeTime, httpErrorToString, loadChannelMessages, loadChannels, sendMessage)
 
-import Json.Decode
+import Http
+import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (required)
+import Json.Encode as Encode
 import Model exposing (Message, Model)
 import Msg exposing (Msg(..))
+import RemoteData
 import RemoteData.Http
 import Time
 
@@ -13,9 +16,9 @@ loadChannels =
     RemoteData.Http.get "http://localhost:8080/api/v1/channels" HandleChannelResponse channelDecoder
 
 
-channelDecoder : Json.Decode.Decoder (List String)
+channelDecoder : Decode.Decoder (List String)
 channelDecoder =
-    Json.Decode.list Json.Decode.string
+    Decode.list Decode.string
 
 
 loadChannelMessages : String -> Cmd Msg
@@ -27,23 +30,56 @@ loadChannelMessages channel =
     RemoteData.Http.get url HandleChannelMessagesResponse channelMessagesDecoder
 
 
-channelMessagesDecoder : Json.Decode.Decoder (List Message)
+sendMessage : String -> String -> (RemoteData.WebData String -> msg) -> Cmd msg
+sendMessage channel message msg =
+    RemoteData.Http.post
+        ("http://localhost:8080/api/v1/channels/" ++ channel ++ "/messages")
+        msg
+        Decode.string
+        (encodeSendMessage message)
+
+
+encodeSendMessage : String -> Encode.Value
+encodeSendMessage message =
+    Encode.string message
+
+
+channelMessagesDecoder : Decode.Decoder (List Message)
 channelMessagesDecoder =
-    Json.Decode.list channelMessageDecoder
+    Decode.list channelMessageDecoder
 
 
-channelMessageDecoder : Json.Decode.Decoder Message
+channelMessageDecoder : Decode.Decoder Message
 channelMessageDecoder =
-    Json.Decode.succeed Message
-        |> required "author" Json.Decode.string
-        |> required "content" Json.Decode.string
+    Decode.succeed Message
+        |> required "author" Decode.string
+        |> required "content" Decode.string
         |> required "created" decodeTime
 
 
-decodeTime : Json.Decode.Decoder Time.Posix
+decodeTime : Decode.Decoder Time.Posix
 decodeTime =
-    Json.Decode.int
-        |> Json.Decode.andThen
+    Decode.int
+        |> Decode.andThen
             (\ms ->
-                Json.Decode.succeed <| Time.millisToPosix ms
+                Decode.succeed <| Time.millisToPosix ms
             )
+
+
+httpErrorToString : Http.Error -> String
+httpErrorToString error =
+    case error of
+        Http.BadUrl string ->
+            "Bad url: " ++ string
+
+        Http.Timeout ->
+            "time out"
+
+        Http.NetworkError ->
+            "network error"
+
+        Http.BadStatus int ->
+            "Bad status: " ++ String.fromInt int
+
+        Http.BadBody string ->
+            "Bad body: " ++ string

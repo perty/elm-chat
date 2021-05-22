@@ -11,3 +11,6 @@ type Msg
     | HandleChannelResponse (WebData (List String))
     | HandleChannelMessagesResponse (WebData (List Message))
     | ToggleSearching
+    | UpdateCurrentInputMessage String
+    | SendMessage
+    | SendMessageResult (WebData String)

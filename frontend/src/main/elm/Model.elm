@@ -9,6 +9,8 @@ type alias Model =
     , activeChannel : String
     , channelMessages : WebData (List Message)
     , searching : Bool
+    , currentInputMessage : String
+    , sendMessageState : WebData String
     }
 
 
@@ -25,4 +27,6 @@ initialModel =
     , activeChannel = "general"
     , channelMessages = NotAsked
     , searching = False
+    , currentInputMessage = ""
+    , sendMessageState = NotAsked
     }

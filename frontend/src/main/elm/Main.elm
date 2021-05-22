@@ -1,9 +1,10 @@
 module Main exposing (main)
 
-import Api exposing (loadChannelMessages, loadChannels)
+import Api exposing (loadChannelMessages, loadChannels, sendMessage)
 import Browser
 import Model exposing (Message, Model, initialModel)
 import Msg exposing (Msg(..))
+import RemoteData exposing (RemoteData(..))
 import Time
 import View exposing (view)
 
@@ -43,6 +44,20 @@ update msg model =
 
         ToggleSearching ->
             ( { model | searching = not model.searching }, Cmd.none )
+
+        UpdateCurrentInputMessage string ->
+            ( { model | currentInputMessage = string }, Cmd.none )
+
+        SendMessage ->
+            ( model, sendMessage model.activeChannel model.currentInputMessage SendMessageResult )
+
+        SendMessageResult webData ->
+            case webData of
+                Success _ ->
+                    ( { model | sendMessageState = webData, currentInputMessage = "" }, Cmd.none )
+
+                _ ->
+                    ( { model | sendMessageState = webData }, Cmd.none )
 
 
 

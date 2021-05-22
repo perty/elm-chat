@@ -1,11 +1,14 @@
 module View exposing (channelPanel, chatPanel, grey, view, white)
 
+import Api exposing (httpErrorToString)
 import Element exposing (Color, Element, alignBottom, alignRight, column, el, fill, fillPortion, height, layout, minimum, mouseOver, none, padding, paddingXY, paragraph, px, rgb255, rgba255, row, scrollbarY, spacingXY, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
+import Html.Events
+import Json.Decode as Decode
 import Model exposing (Message, Model)
 import Msg exposing (Msg(..))
 import RemoteData exposing (RemoteData(..), WebData)
@@ -20,14 +23,14 @@ view model =
                 [ row [ width fill, Border.width 1, paddingXY 0 5 ] [ el [] <| text "Top menu row" ]
                 , row [ width <| minimum 600 fill, height <| minimum 0 <| fill, Font.size 16 ]
                     [ channelPanel model.channels model.activeChannel
-                    , chatPanel model.activeChannel model.channelMessages
+                    , chatPanel model
                     ]
                 ]
 
         else
             row [ width <| minimum 600 fill, height fill, Font.size 16 ]
                 [ channelPanel model.channels model.activeChannel
-                , chatPanel model.activeChannel model.channelMessages
+                , chatPanel model
                 ]
 
 
@@ -88,8 +91,8 @@ channelPanel channelData activeChannel =
             column [] [ el [] <| text "Failed in loading channels." ]
 
 
-chatPanel : String -> WebData (List Message) -> Element Msg
-chatPanel channel messages =
+chatPanel : Model -> Element Msg
+chatPanel model =
     let
         header =
             row
@@ -99,7 +102,7 @@ chatPanel channel messages =
                 , Border.widthEach { bottom = 2, top = 0, left = 0, right = 0 }
                 , Border.color grey
                 ]
-                [ el [] <| text ("#" ++ channel)
+                [ el [] <| text ("#" ++ model.activeChannel)
                 , Input.button
                     [ padding 5
                     , alignRight
@@ -113,29 +116,40 @@ chatPanel channel messages =
                 ]
 
         footer =
-            el [ alignBottom, padding 20, width fill ] <|
-                row
-                    [ spacingXY 2 0
-                    , width fill
-                    , Border.width 2
-                    , Border.rounded 6
-                    , Border.color grey
-                    ]
-                    [ el
-                        [ padding 5
-                        , Border.widthEach { right = 2, left = 0, top = 0, bottom = 0 }
-                        , Border.color grey
-                        , Font.bold
-                        , mouseOver [ Background.color <| rgb255 86 182 139 ]
-                        ]
-                      <|
+            column [ alignBottom, padding 20, width fill ]
+                [ sendState
+                , row [ spacingXY 2 0, width fill, Border.width 2, Border.rounded 6, Border.color grey ]
+                    [ el [ padding 5, Border.widthEach { right = 2, left = 0, top = 0, bottom = 0 }, Border.color grey, Font.bold, mouseOver [ Background.color <| rgb255 86 182 139 ] ] <|
                         text " + "
-                    , el [ Background.color white ] none
+                    , textInput
                     ]
+                ]
+
+        textInput =
+            Input.text [ Background.color white, onEnter SendMessage ]
+                { text = model.currentInputMessage
+                , label = Input.labelHidden "obviously"
+                , onChange = UpdateCurrentInputMessage
+                , placeholder = Nothing
+                }
+
+        sendState =
+            case model.sendMessageState of
+                NotAsked ->
+                    none
+
+                Loading ->
+                    el [ Font.size 10 ] <| text "sending ..."
+
+                Failure error ->
+                    el [ Font.size 10 ] <| text (httpErrorToString error)
+
+                Success _ ->
+                    none
     in
     column [ height fill, width <| fillPortion 3 ]
         [ header
-        , messagePanel messages
+        , messagePanel model.channelMessages
         , footer
         ]
 
@@ -172,3 +186,24 @@ messageEntry message =
             [ el [ Font.bold ] <| text message.author, text (TimeUtil.timeToString TimeUtil.defaultZone message.created) ]
         , paragraph [] [ text message.content ]
         ]
+
+
+
+-- Utility
+
+
+onEnter : msg -> Element.Attribute msg
+onEnter msg =
+    Element.htmlAttribute
+        (Html.Events.on "keyup"
+            (Decode.field "key" Decode.string
+                |> Decode.andThen
+                    (\key ->
+                        if key == "Enter" then
+                            Decode.succeed msg
+
+                        else
+                            Decode.fail "Not the enter key"
+                    )
+            )
+        )
