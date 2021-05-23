@@ -9,6 +9,7 @@ import java.util.*;
 @Service
 public class ChannelService {
     private static final Logger LOG = LoggerFactory.getLogger(ChannelService.class);
+    private static final String OK = "\"ok\"";
 
     List<String> listChannels() {
         List<String> result = new ArrayList<>();
@@ -44,6 +45,11 @@ public class ChannelService {
             messages.add(message);
         }
         return messages;
+    }
+
+    public String postMessage(String channel, String message) {
+        LOG.info("Post in channel {}, message {}.", channel, message);
+        return OK;
     }
 }
 
