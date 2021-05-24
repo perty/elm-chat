@@ -1,4 +1,4 @@
-module Model exposing (Message, Model, initialModel)
+module Model exposing (ChatMessage, Model, initialModel)
 
 import RemoteData exposing (RemoteData(..), WebData)
 import Time
@@ -7,7 +7,7 @@ import Time
 type alias Model =
     { channels : WebData (List String)
     , activeChannel : String
-    , channelMessages : WebData (List Message)
+    , channelMessages : WebData (List ChatMessage)
     , searching : Bool
     , currentInputMessage : String
     , sendMessageState : WebData String
@@ -15,7 +15,7 @@ type alias Model =
     }
 
 
-type alias Message =
+type alias ChatMessage =
     { author : String
     , content : String
     , created : Time.Posix

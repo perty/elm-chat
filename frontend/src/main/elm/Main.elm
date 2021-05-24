@@ -2,9 +2,11 @@ port module Main exposing (main)
 
 import Api exposing (loadChannelMessages, loadChannels, sendMessage)
 import Browser
-import Model exposing (Message, Model, initialModel)
+import Json.Decode exposing (Decoder, andThen, decodeString, errorToString, field, oneOf, string, succeed)
+import Json.Decode.Pipeline exposing (required)
+import Model exposing (ChatMessage, Model, initialModel)
 import Msg exposing (Msg(..))
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 import Time
 import View exposing (view)
 
@@ -15,6 +17,17 @@ port websocketIn : (String -> msg) -> Sub msg
 
 --port websocketOut : Json.Encode.Value -> Cmd msg
 --port setStorage : String -> Cmd msg
+
+
+type Message
+    = NewChatMessage NewChatMessagePayload
+    | UnknownMessage String
+
+
+type alias NewChatMessagePayload =
+    { channel : String
+    , message : String
+    }
 
 
 main =
@@ -72,8 +85,42 @@ update msg model =
 
 
 updateBasedOnMessage : String -> Model -> ( Model, Cmd Msg )
-updateBasedOnMessage messageString model =
-    ( { model | lastMessageReceived = messageString }, Cmd.none )
+updateBasedOnMessage message model =
+    case decodeMessage message of
+        NewChatMessage payload ->
+            ( { model | lastMessageReceived = message }, Cmd.none )
+
+        UnknownMessage string ->
+            ( { model | lastMessageReceived = string }, Cmd.none )
+
+
+decodeMessage : String -> Message
+decodeMessage messageToDecode =
+    case
+        decodeString
+            (oneOf
+                [ newChatMessageDecoder
+                ]
+            )
+            messageToDecode
+    of
+        Ok message ->
+            message
+
+        Err error ->
+            UnknownMessage (errorToString error)
+
+
+newChatMessageDecoder : Decoder Message
+newChatMessageDecoder =
+    field "newChatMessage" newChatMessagePayloadDecoder |> andThen (\payload -> succeed (NewChatMessage payload))
+
+
+newChatMessagePayloadDecoder : Decoder NewChatMessagePayload
+newChatMessagePayloadDecoder =
+    succeed NewChatMessagePayload
+        |> required "channel" string
+        |> required "message" string
 
 
 

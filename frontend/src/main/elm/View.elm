@@ -9,7 +9,7 @@ import Element.Input as Input
 import Html exposing (Html)
 import Html.Events
 import Json.Decode as Decode
-import Model exposing (Message, Model)
+import Model exposing (ChatMessage, Model)
 import Msg exposing (Msg(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import TimeUtil
@@ -154,7 +154,7 @@ chatPanel model =
         ]
 
 
-messagePanel : WebData (List Message) -> Element Msg
+messagePanel : WebData (List ChatMessage) -> Element Msg
 messagePanel webMessages =
     case webMessages of
         NotAsked ->
@@ -178,7 +178,7 @@ messagePanel webMessages =
                 List.map messageEntry messages
 
 
-messageEntry : Message -> Element msg
+messageEntry : ChatMessage -> Element msg
 messageEntry message =
     column
         [ width fill, spacingXY 0 5 ]

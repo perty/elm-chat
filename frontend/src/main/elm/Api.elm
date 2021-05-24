@@ -4,7 +4,7 @@ import Http
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
-import Model exposing (Message, Model)
+import Model exposing (ChatMessage, Model)
 import Msg exposing (Msg(..))
 import RemoteData
 import RemoteData.Http
@@ -44,14 +44,14 @@ encodeSendMessage message =
     Encode.string message
 
 
-channelMessagesDecoder : Decode.Decoder (List Message)
+channelMessagesDecoder : Decode.Decoder (List ChatMessage)
 channelMessagesDecoder =
     Decode.list channelMessageDecoder
 
 
-channelMessageDecoder : Decode.Decoder Message
+channelMessageDecoder : Decode.Decoder ChatMessage
 channelMessageDecoder =
-    Decode.succeed Message
+    Decode.succeed ChatMessage
         |> required "author" Decode.string
         |> required "content" Decode.string
         |> required "created" decodeTime

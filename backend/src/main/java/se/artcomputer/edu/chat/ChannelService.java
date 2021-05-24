@@ -2,6 +2,7 @@ package se.artcomputer.edu.chat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -10,6 +11,12 @@ import java.util.*;
 public class ChannelService {
     private static final Logger LOG = LoggerFactory.getLogger(ChannelService.class);
     private static final String OK = "\"ok\"";
+    private ChannelRepository channelRepository;
+
+    @Autowired
+    public ChannelService(ChannelRepository channelRepository) {
+        this.channelRepository = channelRepository;
+    }
 
     List<String> listChannels() {
         List<String> result = new ArrayList<>();
