@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Api exposing (loadChannelMessages, loadChannels, sendMessage)
 import Browser
@@ -7,6 +7,14 @@ import Msg exposing (Msg(..))
 import RemoteData exposing (RemoteData(..))
 import Time
 import View exposing (view)
+
+
+port websocketIn : (String -> msg) -> Sub msg
+
+
+
+--port websocketOut : Json.Encode.Value -> Cmd msg
+--port setStorage : String -> Cmd msg
 
 
 main =
@@ -59,6 +67,14 @@ update msg model =
                 _ ->
                     ( { model | sendMessageState = webData }, Cmd.none )
 
+        WebsocketIn message ->
+            updateBasedOnMessage message model
+
+
+updateBasedOnMessage : String -> Model -> ( Model, Cmd Msg )
+updateBasedOnMessage messageString model =
+    ( { model | lastMessageReceived = messageString }, Cmd.none )
+
 
 
 -- Subscription
@@ -66,7 +82,10 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Time.every second Tick
+    Sub.batch
+        [ websocketIn WebsocketIn
+        , Time.every second Tick
+        ]
 
 
 second =

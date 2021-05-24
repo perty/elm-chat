@@ -11,6 +11,7 @@ type alias Model =
     , searching : Bool
     , currentInputMessage : String
     , sendMessageState : WebData String
+    , lastMessageReceived : String
     }
 
 
@@ -29,4 +30,5 @@ initialModel =
     , searching = False
     , currentInputMessage = ""
     , sendMessageState = NotAsked
+    , lastMessageReceived = ""
     }

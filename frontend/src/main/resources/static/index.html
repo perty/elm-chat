@@ -10,7 +10,42 @@
 <div id="elm"></div>
 
 <script type="text/javascript">
-    Elm.Main.init({node: document.getElementById('elm')});
+    const app = Elm.Main.init({node: document.getElementById('elm')});
+
+    const host = location.hostname + ":" + location.port;
+    let protocol = "wss:";
+    if (location.protocol === "http:") {
+        protocol = "ws:"
+    }
+    console.log(protocol, host);
+    const ws = new WebSocket(protocol + "//" + host + "/websocket");
+
+    ws.onmessage = function (message) {
+        console.log("WebSocketIn");
+        console.log(message);
+        app.ports.websocketIn.send(message.data);
+    };
+
+    ws.onclose = function (event) {
+        console.log("Connection was closed.", event);
+        app.ports.websocketIn.send('{"message":"CLOSE"}')
+    };
+
+    ws.onopen = function () {
+        console.log('Client connection opened');
+    };
+
+/*    app.ports.websocketOut.subscribe(function (msg) {
+        console.log("WebSocketOut");
+        console.log(msg);
+        const jsonString = JSON.stringify(msg);
+        ws.send(jsonString);
+    });*/
+
+/*    app.ports.setStorage.subscribe(function (state) {
+        console.log("Setting storage " + state);
+        localStorage.setItem('session', JSON.stringify(state));
+    });*/
 </script>
 
 </body>

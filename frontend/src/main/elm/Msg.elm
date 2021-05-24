@@ -14,3 +14,4 @@ type Msg
     | UpdateCurrentInputMessage String
     | SendMessage
     | SendMessageResult (WebData String)
+    | WebsocketIn String
