@@ -1,10 +1,14 @@
 package se.artcomputer.edu.chat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
@@ -13,11 +17,13 @@ import java.util.Date;
 public class ChannelService {
     private static final Logger LOG = LoggerFactory.getLogger(ChannelService.class);
     private static final String OK = "\"ok\"";
-    private ChannelRepository channelRepository;
+    private final ChannelRepository channelRepository;
+    private final SessionManager sessionManager;
 
     @Autowired
-    public ChannelService(ChannelRepository channelRepository) {
+    public ChannelService(ChannelRepository channelRepository, SessionManager sessionManager) {
         this.channelRepository = channelRepository;
+        this.sessionManager = sessionManager;
     }
 
     Collection<String> listChannels() {
@@ -29,13 +35,19 @@ public class ChannelService {
         return channelRepository.getMessages(channel);
     }
 
-    public String postMessage(String channel, String messageText) {
+    public String postMessage(String channel, String messageText) throws IOException {
         LOG.info("Post in channel {}, message {}.", channel, messageText);
         Message message = new Message();
         message.author = "fake";
         message.content = messageText;
         message.created = Date.from(Instant.now()).getTime();
         channelRepository.save(channel, message);
+        NewChatMessage newChatMessage = new NewChatMessage(channel, message);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String asString = objectMapper.writerFor(NewChatMessage.class).writeValueAsString(newChatMessage);
+        for (WebSocketSession session : sessionManager.getAllSessions()) {
+            session.sendMessage(new TextMessage(asString));
+        }
         return OK;
     }
 }

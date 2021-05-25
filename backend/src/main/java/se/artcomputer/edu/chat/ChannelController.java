@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Collection;
 
 @RequestMapping("${api.base.path}/channels")
@@ -28,7 +29,12 @@ public class ChannelController {
 
     @PostMapping("/{channel}/messages")
     public ResponseEntity<String> postMessage(@PathVariable String channel, @RequestBody String message) {
-        return new ResponseEntity<>(channelService.postMessage(channel, message), HttpStatus.OK);
+        try {
+            return new ResponseEntity<>(channelService.postMessage(channel, message), HttpStatus.OK);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

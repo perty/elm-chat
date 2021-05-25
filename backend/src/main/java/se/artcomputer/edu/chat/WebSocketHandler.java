@@ -2,7 +2,9 @@ package se.artcomputer.edu.chat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -11,18 +13,18 @@ import org.springframework.web.util.HtmlUtils;
 
 import java.io.IOException;
 import java.time.LocalTime;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
+@Component
 public class WebSocketHandler extends TextWebSocketHandler {
     private static final Logger LOG = LoggerFactory.getLogger(WebSocketHandler.class);
 
-    private final Set<WebSocketSession> sessions = new CopyOnWriteArraySet<>();
+    @Autowired
+    private SessionManager sessionManager;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         LOG.info("Server connection opened");
-        sessions.add(session);
+        sessionManager.addSession(session);
 
         var message = new TextMessage("one-time message from server");
         LOG.info("Server sends: {}", message);
@@ -32,12 +34,12 @@ public class WebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         LOG.info("Server connection closed: {}", status);
-        sessions.remove(session);
+        sessionManager.removeSession(session);
     }
 
     @Scheduled(fixedRate = 1000)
     void sendPeriodicMessages() throws IOException {
-        for (WebSocketSession session : sessions) {
+        for (WebSocketSession session : sessionManager.getAllSessions()) {
             if (session.isOpen()) {
                 String broadcast = "server periodic message " + LocalTime.now();
                 LOG.info("Server sends: {}", broadcast);
