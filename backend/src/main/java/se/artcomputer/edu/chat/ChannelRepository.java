@@ -8,12 +8,19 @@ import java.util.*;
 public class ChannelRepository {
     private static final Map<String, List<Message>> channels = new HashMap<>();
 
-    public static Collection<String> getChannels() {
+    public  Collection<String> getChannels() {
         return channels.keySet();
     }
 
-    public static Collection<Message> getMessages(String channel) {
+    public  Collection<Message> getMessages(String channel) {
         return channels.get(channel);
+    }
+
+    public  Message save(String channel, Message message) {
+        List<Message> messages = new ArrayList<>(channels.get(channel));
+        messages.add(message);
+        channels.put(channel, messages);
+        return message;
     }
 
     static {

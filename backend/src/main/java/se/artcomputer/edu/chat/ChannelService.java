@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Date;
 
 @Service
 public class ChannelService {
@@ -18,44 +20,22 @@ public class ChannelService {
         this.channelRepository = channelRepository;
     }
 
-    List<String> listChannels() {
-        List<String> result = new ArrayList<>();
-        for (var n = 0; n < 10; n++) {
-            result.addAll(Arrays.asList(
-                    "general",
-                    "jobs",
-                    "news-and-links"
-            ));
-        }
-        return result;
+    Collection<String> listChannels() {
+        return channelRepository.getChannels();
     }
 
-    List<Message> listChannelMessages(String channel) {
+    Collection<Message> listChannelMessages(String channel) {
         LOG.info("List messages for channel {}", channel);
-        if (channel.equals("news-and-links")) {
-            return lotsOfMessages();
-        }
-        var message = new Message();
-        message.setAuthor("Anna Bot");
-        message.setContent("This is the only message of the '" + channel + "' channel.");
-        message.setCreated(new Date().getTime());
-        return Collections.singletonList(message);
+        return channelRepository.getMessages(channel);
     }
 
-    private List<Message> lotsOfMessages() {
-        List<Message> messages = new ArrayList<>();
-        for (var n = 0; n < 200; n++) {
-            var message = new Message();
-            message.setAuthor("Anna Bot");
-            message.setContent("This a news message. It can be very boring. It may make you sleep. You can read more here.");
-            message.setCreated(new Date().getTime());
-            messages.add(message);
-        }
-        return messages;
-    }
-
-    public String postMessage(String channel, String message) {
-        LOG.info("Post in channel {}, message {}.", channel, message);
+    public String postMessage(String channel, String messageText) {
+        LOG.info("Post in channel {}, message {}.", channel, messageText);
+        Message message = new Message();
+        message.author = "fake";
+        message.content = messageText;
+        message.created = Date.from(Instant.now()).getTime();
+        channelRepository.save(channel, message);
         return OK;
     }
 }

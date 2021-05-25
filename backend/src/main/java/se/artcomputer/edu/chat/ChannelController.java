@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Collection;
 
 @RequestMapping("${api.base.path}/channels")
 @RestController
@@ -17,12 +17,12 @@ public class ChannelController {
     }
 
     @GetMapping
-    public ResponseEntity<List<String>> listChannels() {
+    public ResponseEntity<Collection<String>> listChannels() {
         return new ResponseEntity<>(channelService.listChannels(), HttpStatus.OK);
     }
 
     @GetMapping("/{channel}/messages")
-    public ResponseEntity<List<Message>> listChannelMessages(@PathVariable String channel) {
+    public ResponseEntity<Collection<Message>> listChannelMessages(@PathVariable String channel) {
         return new ResponseEntity<>(channelService.listChannelMessages(channel), HttpStatus.OK);
     }
 
