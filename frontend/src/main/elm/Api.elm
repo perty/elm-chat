@@ -32,6 +32,10 @@ loadChannelMessages channel =
 
 sendMessage : String -> String -> (RemoteData.WebData String -> msg) -> Cmd msg
 sendMessage channel message msg =
+    let
+        _ =
+            Debug.log "sendMessage" message
+    in
     RemoteData.Http.post
         ("http://localhost:8080/api/v1/channels/" ++ channel ++ "/messages")
         msg

@@ -1,7 +1,19 @@
 package se.artcomputer.edu.chat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class NewChatMessage {
-    Payload newChatMessage;
+    private Payload newChatMessage;
+
+    public Payload getNewChatMessage() {
+        return newChatMessage;
+    }
+
+    public String asJSON() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(this) ;
+    }
 
     public NewChatMessage() {
 
@@ -24,6 +36,13 @@ public class NewChatMessage {
             this.message = message;
         }
 
+        public String getChannel() {
+            return channel;
+        }
+
+        public String getMessage() {
+            return message;
+        }
     }
 
 }

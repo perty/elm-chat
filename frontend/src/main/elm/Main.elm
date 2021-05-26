@@ -50,7 +50,7 @@ init _ =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case Debug.log "Msg" msg of
+    case msg of
         Tick _ ->
             ( model, Cmd.none )
 
@@ -81,14 +81,36 @@ update msg model =
                     ( { model | sendMessageState = webData }, Cmd.none )
 
         WebsocketIn message ->
+            let
+                _ =
+                    Debug.log "WebSocketIn" message
+            in
             updateBasedOnMessage message model
 
 
 updateBasedOnMessage : String -> Model -> ( Model, Cmd Msg )
 updateBasedOnMessage message model =
-    case decodeMessage message of
+    let
+        toChatMessage : NewChatMessagePayload -> ChatMessage
+        toChatMessage newChatMessagePayload =
+            Debug.log "toChatMessage"
+                ChatMessage
+                "author"
+                newChatMessagePayload.message
+                (Time.millisToPosix 0)
+    in
+    case Debug.log "decodeMessage" (decodeMessage message) of
         NewChatMessage payload ->
-            ( { model | lastMessageReceived = message }, Cmd.none )
+            if payload.channel == model.activeChannel then
+                case model.channelMessages of
+                    Success messages ->
+                        ( { model | channelMessages = Success (messages ++ [ toChatMessage payload ]), lastMessageReceived = message }, Cmd.none )
+
+                    _ ->
+                        ( { model | lastMessageReceived = message }, Cmd.none )
+
+            else
+                ( { model | lastMessageReceived = message }, Cmd.none )
 
         UnknownMessage string ->
             ( { model | lastMessageReceived = string }, Cmd.none )
@@ -96,6 +118,10 @@ updateBasedOnMessage message model =
 
 decodeMessage : String -> Message
 decodeMessage messageToDecode =
+    let
+        _ =
+            Debug.log "decodeMessage" messageToDecode
+    in
     case
         decodeString
             (oneOf

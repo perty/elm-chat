@@ -1,6 +1,5 @@
 package se.artcomputer.edu.chat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +42,7 @@ public class ChannelService {
         message.created = Date.from(Instant.now()).getTime();
         channelRepository.save(channel, message);
         NewChatMessage newChatMessage = new NewChatMessage(channel, message);
-        ObjectMapper objectMapper = new ObjectMapper();
-        String asString = objectMapper.writerFor(NewChatMessage.class).writeValueAsString(newChatMessage);
+        String asString = newChatMessage.asJSON();
         for (WebSocketSession session : sessionManager.getAllSessions()) {
             session.sendMessage(new TextMessage(asString));
         }
